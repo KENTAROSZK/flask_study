@@ -5,6 +5,18 @@
 {% endblock %}
 
 {% block content %}
+    <!-- ▼▼▼リスト 5-8追加部分▼▼▼ -->
+    <div style="color: red;">
+        {% if form.errors %}
+            <ul>
+            === エラーメッセージ ===
+            {% for k, v in form.errors.items() %}
+                <li>{{k}}:{{v}}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <!-- ▲▲▲リスト 5-8追加部分▲▲▲ -->
     <form method="POST">
         {{ form.name.label }}{{ form.name(size=20) }}<br>
         {{ form.age.label }}{{ form.age() }}<br>

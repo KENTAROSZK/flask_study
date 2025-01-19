@@ -250,6 +250,111 @@ class UserInfoForm(Form):
 
 
 
+app.pyに追記しておく。
+
+```python:app.py
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+
+# ------------------
+# バリデーション追加したバージョン
+
+from forms import UserInfoForm
+@app.route('/', methods=['GET','POST'])
+def show_enter():
+    # フォームの作成
+    form = UserInfoForm(request.form)
+    
+    # POSTリクエストかつ、入力内容に問題がない時
+    if request.method == "POST" and form.validate(): 
+    	return render_template("result.html", form=form)
+    return render_template('enter.html', form=form)
+
+
+
+if __name__ == '__main__':
+	app.run(
+		host='0.0.0.0', 
+		port=5000, # 起動しているサーバ（dockerならコンテナ）のポート番号
+		debug=True # デバッグモードをオンにするとインタラクティブに画面を更新することができる
+	)
+```
+
+- なんも問題が無ければ、`result.html`が表示される
+
+
+
+enter.htmlも書き換える
+```html:enter.html
+{% extends "base.html" %}
+
+{% block title %}
+    <h1>WTForm：入力</h1>
+{% endblock %}
+
+{% block content %}
+    <!-- ▼▼▼リスト 5-8追加部分▼▼▼ -->
+    <div style="color: red;">
+        {% if form.errors %}
+            <ul>
+            === エラーメッセージ ===
+            {% for k, v in form.errors.items() %}
+                <li>{{k}}:{{v}}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <!-- ▲▲▲リスト 5-8追加部分▲▲▲ -->
+    <form method="POST">
+        {{ form.name.label }}{{ form.name(size=20) }}<br>
+        {{ form.age.label }}{{ form.age() }}<br>
+        {{ form.password.label }}{{ form.password(size=20) }}<br>
+        {{ form.confirm_password.label }}{{ form.confirm_password(size=20) }}<br>
+        {{ form.email.label }}{{ form.email(placeholder="xxxx@example.com") }}<br>
+        {{ form.birthday.label }}{{ form.birthday() }}<br>
+        {{ form.gender.label }}{{ form.gender() }}<br>
+        {{ form.area.label }}{{ form.area() }}<br>
+        {{ form.is_married.label }}{{ form.is_married() }}<br>
+        {{ form.note.label }}{{ form.note(style="height:100px; width:150px")}}<br>
+        {{ form.submit() }}
+    </form>
+{% endblock %}
+```
+
+- バリデーションで問題を検知したら、その内容が`form.errors`に格納される。
+
+
+
+#### 実行結果
+
+##### インプット（成功ケース）
+![このインプット](imgs/161042.png)
+
+##### アウトプット（成功ケース）
+
+![アウトプット](imgs/161128.png)
+
+
+##### インプット（失敗ケース）
+
+![失敗ケース](imgs/161235.png)
+
+##### アウトプット（失敗ケース）
+パスワードを不一致にしたケース
+
+![失敗ケースアウトプット](imgs/161532.png)
+
+
+
+
+
+
+
+
+
+
 
 
 

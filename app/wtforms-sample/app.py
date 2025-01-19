@@ -4,16 +4,32 @@ app = Flask(__name__)
 
 # ------------------------------
 # forms.pyで作成したUserInfoFormを利用する
-from forms import UserInfoForm
+# from forms import UserInfoForm
+# 
+# @app.route('/', methods=['GET','POST'])
+# def show_enter():
+#     # フォームの作成
+#     form = UserInfoForm(request.form)
+#     # POST
+#     if request.method == "POST":
+#         pass
+#     # GET
+#     return render_template('enter.html', form=form)
 
+
+
+# ------------------
+# バリデーション追加したバージョン
+
+from forms import UserInfoForm
 @app.route('/', methods=['GET','POST'])
 def show_enter():
     # フォームの作成
     form = UserInfoForm(request.form)
-    # POST
-    if request.method == "POST":
-        pass
-    # GET
+    
+    # POSTリクエストかつ、入力内容に問題がない時
+    if request.method == "POST" and form.validate(): 
+    	return render_template("result.html", form=form)
     return render_template('enter.html', form=form)
 
 
