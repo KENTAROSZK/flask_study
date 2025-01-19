@@ -12,6 +12,15 @@ flask-wtf==1.1.1
 Werkzeug==2.3.7
 ```
 
+本章で使っているディレクトリは、
+
+```text
+┠form-sample // 5-1
+┠wtforms-sample // 5-2
+┗flask-wtf-sample // 5-3
+```
+
+
 # Formの基本
 
 Formに入力したデータはサーバに送信されて処理される。
@@ -925,5 +934,5 @@ cssの説明は省略（教科書でも省略されている）。
 
 # PRGパターン
 
-![PRGパターン](imges/185453.png)
+![PRGパターン](imgs/185453.png)
 
