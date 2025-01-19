@@ -1,3 +1,17 @@
+# はじめに
+
+requirements.txtの中身を↓のようにしておくべき。
+特に、`Werkzeug==2.3.7`は正誤表に書いてあり、見落とすと沼にはまる（ハマった）。
+
+
+```text:requirements.txt
+flask==2.3.2
+wtforms==3.0.1
+email-validator==2.0.0.post2
+flask-wtf==1.1.1
+Werkzeug==2.3.7
+```
+
 # Formの基本
 
 Formに入力したデータはサーバに送信されて処理される。
@@ -646,6 +660,8 @@ if __name__ == '__main__':
 		- CSRF保護
 			- CSRF：クロスサイト・リクエスト・フォージェリ。ユーザーの意図しない不正なリクエストを送信させる攻撃手法で、ユーザーがログイン中の状態を悪用する。
 
+**▼アプリケーション上の動作**
+
 ```mermaid
 flowchart TD
     A[input.htmlの表示] --> B[ユーザがnameとemailを正しく入力する]
@@ -655,28 +671,259 @@ flowchart TD
     E --> F[output.htmlが表示される]
 ```
 
+```html:base.html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <title>Flask-WTF</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% block title %} タイトル {% endblock %}
+    <hr />
+    {% block content %} 内容 {% endblock %}
+</body>
+</html>
+```
+
+
+```html:_formhelpers.html
+{% macro render_field(field) %}
+    <dt>{{ field.label }}
+    <dd>{{ field(**kwargs)|safe }}
+    {% if field.errors %}
+        <ul style="color: red;">
+        {% for error in field.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </dd>
+{% endmacro %}
+```
+
+```html:input.html
+{% extends "base.html" %}
+
+{% block title %}
+    <h1>Flask-WTF：入力</h1>
+{% endblock %}
+
+{% block content %}
+    {% from "_formhelpers.html" import render_field %}
+    <form method="POST" novalidate>
+        {{ form.csrf_token }}
+        {{ render_field(form.name) }}
+        {{ render_field(form.email) }}
+        <br>
+        {{ form.submit() }}
+    </form>
+{% endblock %}
+```
+
+
+- `{{ form.csrf_token }}`は「CSRFトークン」を生成する。
+	- CSRFは、攻撃者が被害者に代わって意図しないアクションを実行するために悪意のあるリクエストを送信する攻撃方法。
+	- CSRFトークンはこの攻撃を防ぐために使用する。
+	- トークンはランダムな文字列であり、フォーム送信時にサーバからクライアントに送信され、フォームを送信する時に再度サーバに送信される。サーバは送信されたトークンが正しい場合のみにリクエストを受け付ける
+	- 攻撃者はトークンを知らないため、攻撃を行えない。
+
+
+```html:output.html
+{% extends "base.html" %}
+
+{% block title %}
+    <h1>Flask-WTF：出力</h1>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <ul>
+            <li>名前: {{session['name']}}</li>
+            <li>メールアドレス: {{session['email']}}</li>
+        </ul>
+        <p><a href="{{ url_for('input') }}">入力画面に戻る</a></p>
+    </div>
+{% endblock %}
+```
 
 
 
+```css:style.css
+/* ========== 全体のスタイル ========== */
+/* 
+    body: ページ全体のスタイルを定義します。
+    フォントファミリーをArialとsans-serifに設定し、
+    背景色を#f7f7f7（薄い灰色）に設定しています。 
+*/
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+}
+
+/* ========== エラーのスタイル ========== */
+/* 
+    .field-errors: このクラスセレクタは、エラーメッセージのスタイルを定義します。
+    色は赤、マージンとパディングは0に設定されています。 
+    パディング: パディングは要素の内側のスペースを指します。
+    マージン: マージンは要素の外側のスペースを指します。
+*/
+.field-errors {
+    color: red;
+    margin: 0;
+    padding: 0;
+}
+/* 
+    .field-errors li: このクラスセレクタは、
+    エラーメッセージのリストアイテムのスタイルを定義します。
+    リストのスタイルタイプはnoneに設定されています。
+    noneに設定することで、リストアイテムのマーカー
+    （通常は順序なしリストでの黒い点や順序付きリストでの数字）を非表示にできます。
+*/
+.field-errors li {
+    list-style-type: none;
+}
+
+/* ========== ヘッダーのスタイル ========== */
+/* 
+    h1: h1見出しのスタイルを定義します。
+    フォントサイズは2em、テキストは中央揃え、上下のマージンは1emに設定しています。
+*/
+h1 {
+    font-size: 2em;
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+/* 
+    hr: このセレクタは、水平線のスタイルを定義します。
+    上下のマージンは1em、ボーダーはなく、上部に1pxの#ccc（薄い灰色）
+    のボーダーに設定しています。
+*/
+hr {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+/* ========== フォームのスタイル ========== */
+/* 
+    form: このセレクタは、フォームのスタイルを定義します。
+    表示はフレックスボックス、方向は縦、アイテムは中央揃えに設定しています。
+    ※フレックスボックスは、レスポンシブデザインに特に適している
+    　レイアウトモデルです。
+*/
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+/* 
+    label: このセレクタは、ラベルのスタイルを定義します。
+    表示はブロック、下のマージンは0.5emに設定しています。
+*/
+label {
+    display: block;
+    margin-bottom: 0.5em;
+}
+/* 
+    input[type=text], input[type=email]: このセレクタは、
+    テキスト入力とメール入力のスタイルを定義します。
+    パディングは0.5em、ボーダーラディウスは4px、
+    ボーダーは1pxの#ccc、幅は100%に設定されています。
+    ※ボーダーラディウス（border-radius）は、CSSプロパティの一つで、
+    HTML要素の角を丸くするために使用します。
+*/
+input[type=text], input[type=email] {
+    padding: 0.5em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+/* 
+    input[type=submit]: このセレクタは、送信ボタンのスタイルを定義します。
+    背景色は#4CAF50（緑色）、文字色は白、ボーダーはなし、
+    ボーダーラディウスは4px、パディングは0.5emと1em、カーソルはポインタ、
+    上のマージンは1emに設定しています。
+*/
+input[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    margin-top: 1em;
+}
+/* 
+    input[type=submit]:hover: このセレクタは、
+    送信ボタンにマウスがホバーした時のスタイルを定義します。
+    背景色が#3e8e41（濃い緑色）に変わります。
+*/
+input[type=submit]:hover {
+    background-color: #3e8e41;
+}
+
+/* ========== 出力画面のスタイル ========== */
+/* 
+    div: このセレクタは、div要素のスタイルを定義します。
+    表示はフレックスボックス、方向は縦、アイテムは中央揃えに設定しています。
+*/
+div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+}
+/* 
+    ul: このセレクタは、順序なしリストのスタイルを定義します。
+    リストスタイルはなし、左パディングは0に設定しています。
+*/
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+/* 
+    li: このセレクタは、リストアイテムのスタイルを定義します。
+    下のマージンは0.5emに設定しています。
+*/
+li {
+    margin-bottom: 0.5em;
+}
+/* 
+    a: このセレクタは、リンクのスタイルを定義します。
+    色は#4CAF50（緑色）、テキスト装飾はなしに設定しています。
+*/
+a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+/* 
+    a:hover: このセレクタは、リンクにマウスがホバーした時の
+    スタイルを定義します。
+    テキスト装飾が下線に変わります。
+*/
+a:hover {
+    text-decoration: underline;
+}
+
+```
+
+cssの説明は省略（教科書でも省略されている）。
 
 
+#### 実行結果
 
+![実行結果](imgs/185054.png)
 
+- 見た目もそれっぽくきれいなモノができた
+- セッション（`session`）を使うことで、DBを使わずに、ページ間でデータを共有することができる
+	- `session`オブジェクトは、辞書型のように使えるため、キーと値のペアでデータの保存、抽出ができる。
+- 『PRGパターン』（POST-Redirect-GET）は、フォームデータの二重送信を防ぐ手法。ブラウザ更新ボタンや戻るボタンを押しても、フォームに二重でデータが送信されることを防ぐ。
+	- 今回のシンプルな例では、PRGパターンのメリットは見出しづらいが、次章移行のDBへのSQL更新処理系を作成するときなどは、役に立つイメージを持ちやすい。
 
+# PRGパターン
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+![PRGパターン](imges/185453.png)
 

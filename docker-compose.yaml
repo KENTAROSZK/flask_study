@@ -1,9 +1,9 @@
 services:
-  ubuntu_service:
+  python-flask:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ubuntu_container
+    container_name: python_container
     environment:
       FLASK_APP: app.py # Flaskアプリのエントリーポイント
       FLASK_ENV: development # 開発環境

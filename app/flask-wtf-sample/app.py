@@ -22,7 +22,7 @@ def input():
 		form.name.data = session["name"]
 	if "email" in session:
 		form.email.data = session["email"]
-	return render_template("input.html")
+	return render_template("input.html", form=form)
 
 
 @app.route("/output")
