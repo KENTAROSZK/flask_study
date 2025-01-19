@@ -57,7 +57,7 @@ def do_get_post():
 
 
 
-## WTFormsを使おう
+## 5-2 WTFormsを使おう
 
 - WTFormsとは？
 	- Flaskで使用されるフォーム処理ライブラリ
@@ -554,3 +554,129 @@ class UserInfoForm(Form):
 ##### 実行結果
 
 ![実行結果](imgs/163811.png)
+
+
+
+## 5-3：Flask-WTFを使おう
+
+- WTFormsを使うことで、フォームの作成やバリデーションを簡単に作成できた。
+- 実はもっと簡単に作成できる方法hがある。
+- それが、`Falsk-WTF`
+
+### 5-3-1:インストール
+
+`pip install flask-wtf==1.1.1`
+
+
+### 5-3-2:Flask-WTFの使用方法
+
+![Falsk-WTFのフォルダ構成](imgs/173545.png)
+
+
+```python:forms.py
+from flask_wtf import FlaskForm
+from wtforms import StringField, EmailField, SubmitField
+from wtforms.validators import DataRequired, Email
+
+
+class InputForm(FlaskForm):
+	name = StringField(
+		"名前: ",
+		validators = [DataRequired("必須入力")]
+	)
+
+	email = EmailField(
+		"メアド: ",
+		validators = [Email("メアドフォーマットに直して。")]
+	)
+
+	submit = SubmitField(
+		"送信"
+	)
+```
+
+
+```python:app.py
+from flask import Flask, render_template, session, redirect, url_for
+import os
+
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.urandom(24)
+
+from forms import InputForm
+
+@app.route("/", methods = ["GET", "POST"])
+def input():
+	form = InputForm()
+
+	# POST
+	if form.validate_on_submit():
+		session["name"] = form.name.data
+		session["email"] = form.email.data
+		return redirect(url_for("output"))
+
+	# GET
+	if "name" in session:
+		form.name.data = session["name"]
+	if "email" in session:
+		form.email.data = session["email"]
+	return render_template("input.html")
+
+
+@app.route("/output")
+def output():
+	return render_template("output.html")
+
+
+if __name__ == '__main__':
+	app.run(
+		host='0.0.0.0', 
+		port=5000, # 起動しているサーバ（dockerならコンテナ）のポート番号
+		debug=True # デバッグモードをオンにするとインタラクティブに画面を更新することができる
+	)
+```
+
+- `app.config["SECRET_KEY"]`はFlaskにおいてアプリのセキュリティに関する重要な設定。
+	- セッション情報を暗号化するためのキーなどに使用される。
+	- 設定値は自分で任意の文字列を指定できるが、長いランダムな文字列が推奨される。今回は`os.urandom(24)`を利用した。
+- Flaskでは、`SECRET_KEY`を設定することで、Flask拡張機能で利用されるセキュリティ機能を使用することができるようになる。
+	- 例）
+		- セッションの保護
+		- CSRF保護
+			- CSRF：クロスサイト・リクエスト・フォージェリ。ユーザーの意図しない不正なリクエストを送信させる攻撃手法で、ユーザーがログイン中の状態を悪用する。
+
+```mermaid
+flowchart TD
+    A[input.htmlの表示] --> B[ユーザがnameとemailを正しく入力する]
+    B --> C["送信ボタン"を押す]
+    C --> D[POSTされる]
+    D --> E[app.pyのform.validate_on_submitがTRUEとなる]
+    E --> F[output.htmlが表示される]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
