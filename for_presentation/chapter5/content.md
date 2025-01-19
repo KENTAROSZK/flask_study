@@ -152,7 +152,7 @@ if __name__ == '__main__':
 ```
 
 
-```html:enter.html
+```html;enter.html
 {% extends "base.html" %}
 
 {% block title %}
