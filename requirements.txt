@@ -1,1 +1,2 @@
 flask
+wtforms==3.0.1
