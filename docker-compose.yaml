@@ -1,0 +1,14 @@
+services:
+  ubuntu_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ubuntu_container
+    environment:
+      FLASK_APP: app.py # Flaskアプリのエントリーポイント
+      FLASK_ENV: development # 開発環境
+    ports:
+      - "8000:5000" # http://localhost:8000/
+    volumes:
+      - ./app:/app
+    tty: true

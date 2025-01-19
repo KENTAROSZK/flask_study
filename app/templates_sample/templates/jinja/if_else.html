@@ -1,0 +1,26 @@
+{% extends "jinja/base2.html" %}
+
+{% block title %}render_template{% endblock %}
+
+{% block header %}<h1>条件分岐</h1>{% endblock %}
+
+{% block content %}
+	{% if colour == "red" %}
+		<p>選択色は<span style="color: red;">赤色</span></p>
+	{% elif colour == "blue" %}
+		<p>選択色は<span style="color: blue;">青色</span></p>
+	{% elif colour == "yellow" %}
+		<p>選択色は<span style="color: yellow;">黄色</span></p>
+	{% else %}
+		<p>色は赤青黄色以外です</p>
+	{% endif %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
