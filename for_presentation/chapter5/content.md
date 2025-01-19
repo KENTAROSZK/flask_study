@@ -337,10 +337,6 @@ enter.htmlも書き換える
 ![アウトプット](imgs/161128.png)
 
 
-##### インプット（失敗ケース）
-
-![失敗ケース](imgs/161235.png)
-
 ##### アウトプット（失敗ケース）
 パスワードを不一致にしたケース
 
@@ -349,21 +345,107 @@ enter.htmlも書き換える
 
 
 
+### 5-2-3：テンプレートマクロとは？
+
+- テンプレートエンジンにおいて、特定のタグがや記号を使って定義する再利用可能な「テンプレート」のこと。
+- jinja2のテンプレートマクロは、よく使用する表示形式を関数として再利用可能とする。
+
+![テンプレマクロ](imgs/161918.png)
+
+
+#### ファイルを作成する
+
+```html:_formhelpwers.html
+{% macro render_field(field) %}
+    <dt>{{ field.label }}
+    <dd>{{ field(**kwargs)|safe }}
+    {% if field.errors %}
+        <ul style="color: red;">
+        {% for error in field.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </dd>
+{% endmacro %}
+```
+
+- 1行目：`render_field`がマクロ名
+- マクロの内容：
+	- ラベルを使用して、フィールドを表示する。もしエラーがあればそのリストを表示する。
+
+
+##### enter2.htmlを作成する
+
+```html:enter2.html
+{% extends "base.html" %}
+
+{% block title %}
+    <h1>WTForm：入力（マクロ使用）</h1>
+{% endblock %}
+
+{% block content %}
+    <!-- formhelpers.htmlで定義したrender_fieldマクロをインポート -->
+    {% from "_formhelpers.html" import render_field %}
+    <form method="POST" novalidate>
+        {{ render_field(form.name) }}
+        {{ render_field(form.age) }}
+        {{ render_field(form.password) }}
+        {{ render_field(form.confirm_password) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.birthday) }}
+        {{ render_field(form.gender) }}
+        {{ render_field(form.area) }}
+        {{ render_field(form.is_married) }}
+        {{ render_field(form.note) }}
+        {{ form.submit() }}
+    </form>
+{% endblock %}
+```
+
+- `{% from "_formhelpers.html" import render_field %}`でファイル`_formhelpers.html`からマクロ「`render_field`」をimportしている。
 
 
 
+##### app.pyの修正
+
+```python:app.py
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
 
 
+# ------------------
+# テンプレートマクロを活用した場合
+
+from forms import UserInfoForm
+@app.route('/', methods=['GET','POST'])
+def show_enter():
+    # フォームの作成
+    form = UserInfoForm(request.form)
+    
+    # POSTリクエストかつ、入力内容に問題がない時
+    if request.method == "POST" and form.validate(): 
+    	return render_template("result.html", form=form)
+    return render_template('enter2.html', form=form)
 
 
+if __name__ == '__main__':
+	app.run(
+		host='0.0.0.0', 
+		port=5000, # 起動しているサーバ（dockerならコンテナ）のポート番号
+		debug=True # デバッグモードをオンにするとインタラクティブに画面を更新することができる
+	)
+```
+
+###### 実行結果
+
+![実行結果](imgs/162842.png)
 
 
-
-
-
-
-
-
+- バリデーションでエラーを検知したところに赤字でエラー内容を記載できている
+	- 名前：空欄のまま送信したので、必須項目であることを明示してくれている
+	- パスワード：敢えて異なるパスワードを入力したので、それを明示してくれている
 
 
 

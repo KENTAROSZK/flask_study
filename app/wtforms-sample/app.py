@@ -21,6 +21,22 @@ app = Flask(__name__)
 # ------------------
 # バリデーション追加したバージョン
 
+# from forms import UserInfoForm
+# @app.route('/', methods=['GET','POST'])
+# def show_enter():
+#     # フォームの作成
+#     form = UserInfoForm(request.form)
+    
+#     # POSTリクエストかつ、入力内容に問題がない時
+#     if request.method == "POST" and form.validate(): 
+#     	return render_template("result.html", form=form)
+#     return render_template('enter.html', form=form)
+
+
+
+# ------------------
+# テンプレートマクロを活用した場合
+
 from forms import UserInfoForm
 @app.route('/', methods=['GET','POST'])
 def show_enter():
@@ -30,8 +46,7 @@ def show_enter():
     # POSTリクエストかつ、入力内容に問題がない時
     if request.method == "POST" and form.validate(): 
     	return render_template("result.html", form=form)
-    return render_template('enter.html', form=form)
-
+    return render_template('enter2.html', form=form)
 
 
 if __name__ == '__main__':
