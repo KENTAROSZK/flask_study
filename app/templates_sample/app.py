@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import render_template
+from flask import abort
 
 
 app = Flask(__name__)
@@ -107,7 +108,7 @@ def show_jinja_if(target="colourless"):
 # jinjaのフィルター機能を試す
 
 @app.route("/filter")
-def show_filter():
+def show_filter_block():
 	word = "pen"
 	return render_template("filter/block.html", show_word=word)
 
@@ -141,12 +142,30 @@ def show_my_filter():
 	return render_template("filter/my_filter.html", show_word1=word, show_word2=long_word)
 
 
+# -----------------------------------------
+# 4.3
+# エラーハンドリング
+#@app.errorhandler(404)
+#def show_404_page(error):
+#	msg = error.description
+#	print("エラー内容：", msg)
+#	return render_template("errors/404.html"), 404
 
 
+# モジュールのインポート
+from werkzeug.exceptions import NotFound
+
+@app.errorhandler(NotFound)
+def show_404_page(error):
+	msg = error.description
+	print("エラー内容：", msg)
+	return render_template("errors/404.html"), 404
 
 
-
-
+# abort処理
+@app.route("/abort")
+def create_exception():
+	abort(404, "要求されたページやファイルが見つからない")
 
 
 
